@@ -1,13 +1,14 @@
 package main
 
 import (
-  "database/sql"
-  "fmt"
-  "os"
-  "bufio"
-  "strings"
-  "gopkg.in/yaml.v2"
-  _ "github.com/lib/pq"
+	"bufio"
+	"database/sql"
+	"fmt"
+	"os"
+	"strings"
+
+	_ "github.com/lib/pq"
+	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
@@ -74,6 +75,44 @@ func add(db *sql.DB) {
   }
 }
 
+func update(db *sql.DB) {
+  fmt.Println("Enter the ID of the task you want to update")
+  in := bufio.NewReader(os.Stdin)
+  var line string
+  var err error
+  line, err = in.ReadString('\n') 
+  if err != nil {
+    panic(err)
+  }
+  id := strings.TrimSpace(line)
+  fmt.Println("What field do you want to update? (1) Name (2) Description (3) Urgency")
+  line, err = in.ReadString('\n') 
+  fieldNumber := strings.TrimSpace(line)
+  var field string
+  switch fieldNumber {
+  case "1":
+    field = "name"
+    break
+  case "2":
+    field = "description"
+    break
+  case "3":
+    field = "urgency"
+    break
+  default:
+    fmt.Println("Invalid input")
+    return
+  }
+  fmt.Println("Enter new " + field + ":")
+  line, err = in.ReadString('\n') 
+  value := strings.TrimSpace(line)
+  query := "UPDATE task SET " + field + "='" + value + "' WHERE id=" + id + ";"
+  _, err = db.Exec(query)
+  if err != nil {
+    panic(err)
+  }
+}
+
 func main() {
   f, err := os.Open("config.yml")
   if err != nil {
@@ -107,6 +146,8 @@ func main() {
     list(db)
   } else if command == "add" {
       add(db)
+  } else if command == "update" {
+      update(db)
   } else {
     fmt.Println("Unknown command")
   }
