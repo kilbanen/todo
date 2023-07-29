@@ -4,6 +4,8 @@ import (
   "database/sql"
   "fmt"
   "os"
+  "bufio"
+  "strings"
   "gopkg.in/yaml.v2"
   _ "github.com/lib/pq"
 )
@@ -33,6 +35,40 @@ func list(db *sql.DB) {
     fmt.Println(id, name, description, urgency)
   }
   err = rows.Err()
+  if err != nil {
+    panic(err)
+  }
+}
+
+func add(db *sql.DB) {
+  fmt.Println("Adding new task")
+  in := bufio.NewReader(os.Stdin)
+  fmt.Println("Name:")
+  var line string
+  var err error
+  line, err = in.ReadString('\n') 
+  if err != nil {
+    panic(err)
+  }
+  name := strings.TrimSpace(line)
+  fmt.Println("Description:")
+  line, err = in.ReadString('\n') 
+  if err != nil {
+    panic(err)
+  }
+  description := strings.TrimSpace(line)
+  fmt.Println("Urgency:")
+  if err != nil {
+    panic(err)
+  }
+  line, err = in.ReadString('\n') 
+  urgency := strings.TrimSpace(line)
+  fmt.Printf("Your task's name is: %s\n", name)
+  fmt.Printf("Your task's description is: %s\n", description)
+  fmt.Printf("Your task's urgency is: %s\n", urgency)
+  query := "INSERT INTO task (name, description, urgency) VALUES ('" + name + 
+                                                  "', '" + description + "', '" + urgency + "');"
+  _, err = db.Exec(query)
   if err != nil {
     panic(err)
   }
@@ -70,7 +106,7 @@ func main() {
   if command == "list" {
     list(db)
   } else if command == "add" {
-    fmt.Println("Adding new task")
+      add(db)
   } else {
     fmt.Println("Unknown command")
   }
