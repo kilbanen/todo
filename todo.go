@@ -113,6 +113,23 @@ func update(db *sql.DB) {
   }
 }
 
+func delete(db *sql.DB) {
+  fmt.Println("Enter the ID of the task you want to delete")
+  in := bufio.NewReader(os.Stdin)
+  var line string
+  var err error
+  line, err = in.ReadString('\n') 
+  if err != nil {
+    panic(err)
+  }
+  id := strings.TrimSpace(line)
+  query := "DELETE FROM task WHERE id=" + id + ";"
+  _, err = db.Exec(query)
+  if err != nil {
+    panic(err)
+  }
+}
+
 func main() {
   f, err := os.Open("config.yml")
   if err != nil {
@@ -148,6 +165,8 @@ func main() {
       add(db)
   } else if command == "update" {
       update(db)
+  } else if command == "delete" {
+      delete(db)
   } else {
     fmt.Println("Unknown command")
   }
